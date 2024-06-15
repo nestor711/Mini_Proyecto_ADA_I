@@ -1,4 +1,5 @@
 import re
+import time
  
 #Solución 1: Utilizando Listas y Ordenamiento Personalizado
 #En la primera solución, utilizaremos listas para almacenar
@@ -197,6 +198,7 @@ def medir_tiempo_solucion_1(filepath):
     tiempo_total = fin - inicio
     print("La función de la solución 1 se ejecutó en", tiempo_total, "segundos")
     return resultado
+
 # Ejemplo de uso
 filepath = "input1.txt"
 resultado = medir_tiempo_solucion_1(filepath)
