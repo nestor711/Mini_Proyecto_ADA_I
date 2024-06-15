@@ -182,6 +182,25 @@ def leer_datos(filepath):
 
     return jugadores, equipos, sedes
 
+# Función para medir el tiempo de ejecución de la solución 1
+def medir_tiempo_solucion_1(filepath):
+    inicio = time.time()
+    
+    jugadores, equipos, sedes = leer_datos(filepath)
+    asociacion = Asociacion()
+    for sede in sedes.values():
+        asociacion.agregar_sede(sede)
+
+    resultado = str(asociacion)
+    
+    fin = time.time()
+    tiempo_total = fin - inicio
+    print("La función de la solución 1 se ejecutó en", tiempo_total, "segundos")
+    return resultado
+# Ejemplo de uso
+filepath = "input1.txt"
+resultado = medir_tiempo_solucion_1(filepath)
+
 # Cargar datos del archivo
 jugadores, equipos, sedes = leer_datos("input1.txt")
 
