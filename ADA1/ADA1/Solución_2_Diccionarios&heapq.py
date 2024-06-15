@@ -160,6 +160,26 @@ def leer_datos(filepath):
 
     return jugadores, equipos, sedes
 
+def medir_tiempo_ejecucion(filepath):
+    inicio = time.time()
+
+    # Cargar datos del archivo
+    jugadores, equipos, sedes = leer_datos(filepath)
+
+    # Crear la asociación
+    asociacion = Asociacion()
+    for sede in sedes.values():
+        asociacion.agregar_sede(sede)
+
+    # Imprimir los resultados
+    print(asociacion)
+
+    fin = time.time()
+    tiempo_total = fin - inicio
+    print("La función se ejecutó en", tiempo_total, "segundos")
+
+# Ejemplo de uso
+medir_tiempo_ejecucion("input1.txt")
 # Cargar datos del archivo
 jugadores, equipos, sedes = leer_datos("input1.txt")
 
