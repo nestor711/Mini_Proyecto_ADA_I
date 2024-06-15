@@ -1,5 +1,6 @@
 import heapq
 import re
+import time
 
 #Solución 2: Utilizando Diccionarios y Módulo heapq para Priorización
 #La segunda solución utilizará diccionarios para almacenar la información 
@@ -172,14 +173,16 @@ def medir_tiempo_ejecucion(filepath):
         asociacion.agregar_sede(sede)
 
     # Imprimir los resultados
-    print(asociacion)
+    resultado = str(asociacion)
 
     fin = time.time()
     tiempo_total = fin - inicio
     print("La función se ejecutó en", tiempo_total, "segundos")
+    return resultado
 
 # Ejemplo de uso
 medir_tiempo_ejecucion("input1.txt")
+
 # Cargar datos del archivo
 jugadores, equipos, sedes = leer_datos("input1.txt")
 
