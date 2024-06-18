@@ -54,7 +54,7 @@ class Sede:
     def rendimiento_promedio(self):
         if not self.equipos:
             return 0
-        return sum(e.rendimiento_promedio() for e in self.equipos.values()) / len(self.equipos)
+        return sum(e.rendimiento_promedio() for e in self.equipos.values())
 
     def ordenar_equipos(self):
         return heapq.nlargest(len(self.equipos), self.equipos.values(), key=lambda e: (e.rendimiento_promedio(), -len(e.jugadores)))
@@ -101,15 +101,49 @@ class Asociacion:
             "promedio_rendimiento": promedio_rendimiento
         }
 
-    def __repr__(self):
-        sedes_ordenadas = self.ordenar_sedes()
+    def generar_salida_sedes(self):
+        resultados = []
+        for sede in self.sedes.values():
+            resultados.append(f"{sede.nombre}, Rendimiento: {sede.rendimiento_promedio()}")
+            equipos_ordenados = sede.ordenar_equipos()
+            for equipo in equipos_ordenados:
+                resultados.append(f"{equipo.deporte}, Rendimiento: {equipo.rendimiento_promedio()}")
+                jugadores_ordenados = sorted(equipo.jugadores.values(), key=lambda j: j.rendimiento, reverse=True)
+                jugadores_info = ", ".join([f"{{{j.id}, {j.nombre}, {j.rendimiento}}}" for j in jugadores_ordenados])
+                resultados.append(f"{{{jugadores_info}}}")
+        return resultados
+
+    def generar_salida_ranking_jugadores(self):
         ranking = self.ranking_jugadores()
+        ranking_info = ", ".join([str(jugador.id) for jugador in ranking])
+        return f"Ranking Jugadores:\n{{{ranking_info}}}"
+
+    def generar_salida_estadisticas(self):
         estadisticas = self.calcular_estadisticas()
-        sedes_str = '\n\n'.join(str(sede) for sede in sedes_ordenadas)
-        ranking_str = ', '.join(str(jugador.id) for jugador in ranking)
+        jugador_mayor_rendimiento = estadisticas["jugador_mayor_rendimiento"]
+        jugador_menor_rendimiento = estadisticas["jugador_menor_rendimiento"]
+        jugador_mas_joven = estadisticas["jugador_mas_joven"]
+        jugador_mas_veterano = estadisticas["jugador_mas_veterano"]
+        promedio_edad = estadisticas["promedio_edad"]
+        promedio_rendimiento = estadisticas["promedio_rendimiento"]
 
-        return f"{sedes_str}\n\nRanking Jugadores:\n{ranking_str}\n\nEstadísticas:\n{estadisticas}"
+        return (
+            f"Equipo con mayor rendimiento: {{{estadisticas['equipo_mayor_rendimiento'].deporte} {estadisticas['equipo_mayor_rendimiento'].id} {estadisticas['equipo_mayor_rendimiento'].rendimiento_promedio()}}}\n"
+            f"Equipo con menor rendimiento: {{{estadisticas['equipo_menor_rendimiento'].deporte} {estadisticas['equipo_menor_rendimiento'].id} {estadisticas['equipo_menor_rendimiento'].rendimiento_promedio()}}}\n"
+            f"Jugador con mayor rendimiento: {{{jugador_mayor_rendimiento.id}, {jugador_mayor_rendimiento.nombre}, {jugador_mayor_rendimiento.rendimiento}}}\n"
+            f"Jugador con menor rendimiento: {{{jugador_menor_rendimiento.id}, {jugador_menor_rendimiento.nombre}, {jugador_menor_rendimiento.rendimiento}}}\n"
+            f"Jugador más joven: {{{jugador_mas_joven.id}, {jugador_mas_joven.nombre}, {jugador_mas_joven.edad}}}\n"
+            f"Jugador más veterano: {{{jugador_mas_veterano.id}, {jugador_mas_veterano.nombre}, {jugador_mas_veterano.edad}}}\n"
+            f"Promedio de edad de los jugadores: {promedio_edad}\n"
+            f"Promedio de rendimiento de los jugadores: {promedio_rendimiento}"
+        )
 
+    def generar_salida_completa(self):
+        sedes_info = '\n\n'.join(self.generar_salida_sedes())
+        ranking_info = self.generar_salida_ranking_jugadores()
+        estadisticas_info = self.generar_salida_estadisticas()
+
+        return f"{sedes_info}\n\n{ranking_info}\n\n{estadisticas_info}"
 
 # Función para leer los datos desde el archivo
 def leer_datos(filepath):
@@ -173,23 +207,13 @@ def medir_tiempo_ejecucion(filepath):
         asociacion.agregar_sede(sede)
 
     # Imprimir los resultados
-    resultado = str(asociacion)
+    resultado = asociacion.generar_salida_completa()
 
     fin = time.time()
     tiempo_total = fin - inicio
     print("La función se ejecutó en", tiempo_total, "segundos")
+    print(resultado)
     return resultado
 
 # Ejemplo de uso
 medir_tiempo_ejecucion("input1.txt")
-
-# Cargar datos del archivo
-jugadores, equipos, sedes = leer_datos("input1.txt")
-
-# Crear la asociación
-asociacion = Asociacion()
-for sede in sedes.values():
-    asociacion.agregar_sede(sede)
-
-# Imprimir los resultados
-print(asociacion)
