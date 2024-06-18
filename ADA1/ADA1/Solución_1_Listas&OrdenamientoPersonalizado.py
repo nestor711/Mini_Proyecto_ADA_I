@@ -1,6 +1,6 @@
 import re
 import time
- 
+
 #Solución 1: Utilizando Listas y Ordenamiento Personalizado
 #En la primera solución, utilizaremos listas para almacenar
 #jugadores, equipos y sedes, y aplicaremos técnicas de ordenamiento 
@@ -10,7 +10,6 @@ import time
 #y ordenar datos de manera directa.
 
 class Jugador:
-    
     def __init__(self, id, nombre, edad, rendimiento):
         self.id = id
         self.nombre = nombre
@@ -55,14 +54,41 @@ class Sede:
     def rendimiento_promedio(self):
         if not self.equipos:
             return 0
-        total_rendimiento = sum(equipo.rendimiento_promedio() for equipo in self.equipos)
-        return total_rendimiento / len(self.equipos)
+        
+        rendimientos_futbol = []
+        rendimientos_volleyball = []
+        
+        for equipo in self.equipos:
+            if equipo.deporte == "Futbol":
+                rendimientos_futbol.append(equipo.rendimiento_promedio())
+            elif equipo.deporte == "Volleyball":
+                rendimientos_volleyball.append(equipo.rendimiento_promedio())
+        
+        rendimiento_futbol_promedio = sum(rendimientos_futbol) / len(rendimientos_futbol) if rendimientos_futbol else 0
+        rendimiento_volleyball_promedio = sum(rendimientos_volleyball) / len(rendimientos_volleyball) if rendimientos_volleyball else 0
+        
+        return rendimiento_futbol_promedio + rendimiento_volleyball_promedio
 
     def ordenar_equipos(self):
         self.equipos = merge_sort(self.equipos, key=lambda e: (e.rendimiento_promedio(), -len(e.jugadores)))
 
     def __repr__(self):
-        return f"{self.nombre}: {self.equipos}"
+        self.ordenar_equipos()
+
+        resultados = [f"{self.nombre}, Rendimiento: {self.rendimiento_promedio()}"]
+
+        futbol_equipo = next((equipo for equipo in self.equipos if equipo.deporte == "Futbol"), None)
+        volleyball_equipo = next((equipo for equipo in self.equipos if equipo.deporte == "Volleyball"), None)
+
+        if volleyball_equipo:
+            resultados.append(f"Volleyball, Rendimiento: {volleyball_equipo.rendimiento_promedio()}")
+            resultados.append("{" + ', '.join(str(jugador.id) for jugador in volleyball_equipo.jugadores) + "}")
+
+        if futbol_equipo:
+            resultados.append(f"Futbol, Rendimiento: {futbol_equipo.rendimiento_promedio()}")
+            resultados.append("{" + ', '.join(str(jugador.id) for jugador in futbol_equipo.jugadores) + "}")
+
+        return "\n".join(resultados)
 
 
 class Asociacion:
@@ -83,7 +109,6 @@ class Asociacion:
         todos_equipos = [equipo for sede in self.sedes for equipo in sede.equipos]
         todos_jugadores = [jugador for sede in self.sedes for equipo in sede.equipos for jugador in equipo.jugadores]
 
-
         equipo_mayor_rendimiento = max(todos_equipos, key=lambda e: e.rendimiento_promedio(), default=None)
         equipo_menor_rendimiento = min(todos_equipos, key=lambda e: e.rendimiento_promedio(), default=None)
         jugador_mayor_rendimiento = max(todos_jugadores, key=lambda j: j.rendimiento, default=None)
@@ -93,7 +118,7 @@ class Asociacion:
         promedio_edad = sum(jugador.edad for jugador in todos_jugadores) / len(todos_jugadores)
         promedio_rendimiento = sum(jugador.rendimiento for jugador in todos_jugadores) / len(todos_jugadores)
 
-        return {
+        resultado = {
             "equipo_mayor_rendimiento": equipo_mayor_rendimiento,
             "equipo_menor_rendimiento": equipo_menor_rendimiento,
             "jugador_mayor_rendimiento": jugador_mayor_rendimiento,
@@ -104,14 +129,36 @@ class Asociacion:
             "promedio_rendimiento": promedio_rendimiento
         }
 
+        return resultado
+
     def __repr__(self):
         self.ordenar_sedes()
         ranking = self.ranking_jugadores()
         estadisticas = self.calcular_estadisticas()
-        sedes_str = '\n\n'.join(str(sede) for sede in self.sedes)
-        ranking_str = ', '.join(str(jugador.id) for jugador in ranking)
 
-        return f"{sedes_str}\n\nRanking Jugadores:\n{ranking_str}\n\nEstadísticas:\n{estadisticas}"
+        resultados = []
+        
+        for sede in self.sedes:
+            resultados.append(str(sede))
+            for equipo in sede.equipos:
+                resultados.append(f"{equipo.deporte}, Rendimiento: {equipo.rendimiento_promedio()}")
+                resultados.append("{" + ', '.join(str(jugador.id) for jugador in equipo.jugadores) + "}")
+
+            resultados.append("")
+
+        resultados.append("Ranking Jugadores:")
+        resultados.append(", ".join(str(jugador.id) for jugador in ranking))
+        resultados.append("")
+        resultados.append(f"Equipo con mayor rendimiento: {estadisticas['equipo_mayor_rendimiento'].deporte} {sede.nombre}")
+        resultados.append(f"Equipo con menor rendimiento: {estadisticas['equipo_menor_rendimiento'].deporte} {sede.nombre}")
+        resultados.append(f"Jugador con mayor rendimiento: {{{estadisticas['jugador_mayor_rendimiento'].id} , {estadisticas['jugador_mayor_rendimiento'].nombre} , {estadisticas['jugador_mayor_rendimiento'].rendimiento}}} {estadisticas['jugador_mayor_rendimiento']}")
+        resultados.append(f"Jugador con menor rendimiento: {{{estadisticas['jugador_menor_rendimiento'].id} , {estadisticas['jugador_menor_rendimiento'].nombre} , {estadisticas['jugador_menor_rendimiento'].rendimiento}}}")
+        resultados.append(f"Jugador más joven: {{{estadisticas['jugador_mas_joven'].id} , {estadisticas['jugador_mas_joven'].nombre} , {estadisticas['jugador_mas_joven'].edad}}}")
+        resultados.append(f"Jugador más veterano: {{{estadisticas['jugador_mas_veterano'].id} , {estadisticas['jugador_mas_veterano'].nombre} , {estadisticas['jugador_mas_veterano'].edad}}}")
+        resultados.append(f"Promedio de edad de los jugadores: {estadisticas['promedio_edad']}")
+        resultados.append(f"Promedio de rendimiento de los jugadores: {estadisticas['promedio_rendimiento']}")
+
+        return "\n".join(resultados)
 
 
 def merge_sort(arr, key=lambda x: x):
@@ -133,12 +180,13 @@ def merge(left, right, key):
     sorted_list.extend(left if left else right)
     return sorted_list
 
+
 # Función para leer los datos desde el archivo
 def leer_datos(filepath):
     jugadores = {}
     equipos = {}
     sedes = {}
-    
+
     with open(filepath, 'r') as file:
         lines = file.readlines()
 
@@ -183,33 +231,26 @@ def leer_datos(filepath):
 
     return jugadores, equipos, sedes
 
+
 # Función para medir el tiempo de ejecución de la solución 1
 def medir_tiempo_solucion_1(filepath):
     inicio = time.time()
-    
+
     jugadores, equipos, sedes = leer_datos(filepath)
     asociacion = Asociacion()
     for sede in sedes.values():
         asociacion.agregar_sede(sede)
 
     resultado = str(asociacion)
-    
+
     fin = time.time()
     tiempo_total = fin - inicio
     print("La función de la solución 1 se ejecutó en", tiempo_total, "segundos")
     return resultado
 
+
 # Ejemplo de uso
 filepath = "input1.txt"
 resultado = medir_tiempo_solucion_1(filepath)
 
-# Cargar datos del archivo
-jugadores, equipos, sedes = leer_datos("input1.txt")
-
-# Crear la asociación
-asociacion = Asociacion()
-for sede in sedes.values():
-    asociacion.agregar_sede(sede)
-
-# Imprimir los resultados
-print(asociacion)
+print(resultado)
